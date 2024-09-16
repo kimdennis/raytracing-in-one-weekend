@@ -1,6 +1,12 @@
 #include <iostream>
+#include <cstdlib>  // For rand()
 #include "vec3.h"
 #include "ray.h"
+
+// Utility function to generate a random number between 0 and 1
+double random_double() {
+    return rand() / (RAND_MAX + 1.0);
+}
 
 double hit_sphere(const Point3& center, double radius, const Ray& r) {
     Vec3 oc = r.origin() - center;
@@ -34,13 +40,11 @@ Color ray_color(const Ray& r) {
     return (1.0 - t) * Color(1.0, 1.0, 1.0) + t * Color(0.5, 0.7, 1.0);
 }
 
-
-
-
 int main() {
     // Image dimensions
     const int image_width = 400;
     const int image_height = 200;
+    const int samples_per_pixel = 100;  // Number of samples per pixel for antialiasing
 
     // Camera setup
     Point3 origin(0, 0, 0);
@@ -54,10 +58,20 @@ int main() {
     // Rendering loop
     for (int j = image_height - 1; j >= 0; --j) {
         for (int i = 0; i < image_width; ++i) {
-            auto u = double(i) / (image_width - 1);
-            auto v = double(j) / (image_height - 1);
-            Ray r(origin, lower_left_corner + u * horizontal + v * vertical - origin);
-            Color pixel_color = ray_color(r);
+            Color pixel_color(0, 0, 0);
+
+            // Take multiple samples per pixel for antialiasing
+            for (int s = 0; s < samples_per_pixel; ++s) {
+                auto u = (i + random_double()) / (image_width - 1);
+                auto v = (j + random_double()) / (image_height - 1);
+                Ray r(origin, lower_left_corner + u * horizontal + v * vertical - origin);
+                pixel_color += ray_color(r);
+            }
+
+            // Average the color over the number of samples
+            pixel_color /= double(samples_per_pixel);
+
+            // Write the color to the output (convert to [0,255] range)
             std::cout << static_cast<int>(255.999 * pixel_color.x()) << ' '
                 << static_cast<int>(255.999 * pixel_color.y()) << ' '
                 << static_cast<int>(255.999 * pixel_color.z()) << '\n';
