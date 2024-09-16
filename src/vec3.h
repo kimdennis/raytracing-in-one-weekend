@@ -3,46 +3,107 @@
 
 #include <cmath>
 #include <iostream>
+#include <cstdlib>  // For rand()
 
 class Vec3 {
 public:
     double e[3];
 
-    Vec3();
-    Vec3(double e0, double e1, double e2);
+    Vec3() : e{ 0, 0, 0 } {}
+    Vec3(double e0, double e1, double e2) : e{ e0, e1, e2 } {}
 
-    double x() const;
-    double y() const;
-    double z() const;
+    double x() const { return e[0]; }
+    double y() const { return e[1]; }
+    double z() const { return e[2]; }
 
-    Vec3 operator-() const;
-    double operator[](int i) const;
-    double& operator[](int i);
+    Vec3 operator-() const { return Vec3(-e[0], -e[1], -e[2]); }
+    double operator[](int i) const { return e[i]; }
+    double& operator[](int i) { return e[i]; }
 
-    Vec3& operator+=(const Vec3& v);
-    Vec3& operator*=(const double t);
-    Vec3& operator/=(const double t);
+    Vec3& operator+=(const Vec3& v) {
+        e[0] += v.e[0];
+        e[1] += v.e[1];
+        e[2] += v.e[2];
+        return *this;
+    }
 
-    double length() const;
-    double length_squared() const;
+    Vec3& operator*=(const double t) {
+        e[0] *= t;
+        e[1] *= t;
+        e[2] *= t;
+        return *this;
+    }
 
-    bool near_zero() const;
+    Vec3& operator/=(const double t) {
+        return *this *= 1 / t;
+    }
+
+    double length() const {
+        return std::sqrt(length_squared());
+    }
+
+    double length_squared() const {
+        return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
+    }
+
+    bool near_zero() const {
+        const auto s = 1e-8;
+        return (fabs(e[0]) < s) && (fabs(e[1]) < s) && (fabs(e[2]) < s);
+    }
 };
 
-// Utility functions for Vec3
-std::ostream& operator<<(std::ostream& out, const Vec3& v);
-Vec3 operator+(const Vec3& u, const Vec3& v);
-Vec3 operator-(const Vec3& u, const Vec3& v);
-Vec3 operator*(const Vec3& u, const Vec3& v);
-Vec3 operator*(double t, const Vec3& v);
-Vec3 operator*(const Vec3& v, double t);
-Vec3 operator/(Vec3 v, double t);
-double dot(const Vec3& u, const Vec3& v);
-Vec3 cross(const Vec3& u, const Vec3& v);
-Vec3 unit_vector(Vec3 v);
+// Utility function to generate a random number between 0 and 1
+inline double random_double() {
+    return rand() / (RAND_MAX + 1.0);
+}
 
-// Type aliases for 3D points and RGB colors
-using Point3 = Vec3;   // Represents a point in 3D space
-using Color = Vec3;    // Represents an RGB color
+// Type aliases for vec3
+using Point3 = Vec3;  // 3D point
+using Color = Vec3;   // RGB color
+
+// Vec3 utility functions
+inline std::ostream& operator<<(std::ostream& out, const Vec3& v) {
+    return out << v.e[0] << ' ' << v.e[1] << ' ' << v.e[2];
+}
+
+inline Vec3 operator+(const Vec3& u, const Vec3& v) {
+    return Vec3(u.e[0] + v.e[0], u.e[1] + v.e[1], u.e[2] + v.e[2]);
+}
+
+inline Vec3 operator-(const Vec3& u, const Vec3& v) {
+    return Vec3(u.e[0] - v.e[0], u.e[1] - v.e[1], u.e[2] - v.e[2]);
+}
+
+inline Vec3 operator*(const Vec3& u, const Vec3& v) {
+    return Vec3(u.e[0] * v.e[0], u.e[1] * v.e[1], u.e[2] * v.e[2]);
+}
+
+inline Vec3 operator*(double t, const Vec3& v) {
+    return Vec3(t * v.e[0], t * v.e[1], t * v.e[2]);
+}
+
+inline Vec3 operator*(const Vec3& v, double t) {
+    return t * v;
+}
+
+inline Vec3 operator/(Vec3 v, double t) {
+    return (1 / t) * v;
+}
+
+inline double dot(const Vec3& u, const Vec3& v) {
+    return u.e[0] * v.e[0]
+        + u.e[1] * v.e[1]
+        + u.e[2] * v.e[2];
+}
+
+inline Vec3 cross(const Vec3& u, const Vec3& v) {
+    return Vec3(u.e[1] * v.e[2] - u.e[2] * v.e[1],
+        u.e[2] * v.e[0] - u.e[0] * v.e[2],
+        u.e[0] * v.e[1] - u.e[1] * v.e[0]);
+}
+
+inline Vec3 unit_vector(Vec3 v) {
+    return v / v.length();
+}
 
 #endif

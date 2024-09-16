@@ -321,8 +321,6 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="C:\Users\DENNI\Projects\raytracing-in-one-weekend\src\main.cpp" />
-    <ClCompile Include="C:\Users\DENNI\Projects\raytracing-in-one-weekend\src\vec3.cpp" />
-    <ClCompile Include="C:\Users\DENNI\Projects\raytracing-in-one-weekend\src\ray.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="C:\Users\DENNI\Projects\raytracing-in-one-weekend\build\ZERO_CHECK.vcxproj">

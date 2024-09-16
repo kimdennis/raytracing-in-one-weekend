@@ -8,4 +8,4 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Add the executable and include all source files
-add_executable(raytracing src/main.cpp src/vec3.cpp src/ray.cpp)
+add_executable(raytracing src/main.cpp  )

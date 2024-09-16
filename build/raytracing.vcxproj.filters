@@ -4,12 +4,6 @@
     <ClCompile Include="C:\Users\DENNI\Projects\raytracing-in-one-weekend\src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\DENNI\Projects\raytracing-in-one-weekend\src\vec3.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\DENNI\Projects\raytracing-in-one-weekend\src\ray.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="C:\Users\DENNI\Projects\raytracing-in-one-weekend\CMakeLists.txt" />
