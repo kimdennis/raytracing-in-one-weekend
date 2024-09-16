@@ -2,24 +2,32 @@
 #include "vec3.h"
 #include "ray.h"
 
-// Function to check if ray hits a sphere
-bool hit_sphere(const Point3& center, double radius, const Ray& r) {
+double hit_sphere(const Point3& center, double radius, const Ray& r) {
     Vec3 oc = r.origin() - center;
     auto a = dot(r.direction(), r.direction());
     auto b = 2.0 * dot(oc, r.direction());
     auto c = dot(oc, oc) - radius * radius;
     auto discriminant = b * b - 4 * a * c;
-    return (discriminant > 0);
+    if (discriminant < 0) {
+        return -1.0;  // No intersection
+    }
+    else {
+        return (-b - sqrt(discriminant)) / (2.0 * a);  // Return the nearest t
+    }
 }
 
+
 Color ray_color(const Ray& r) {
-    if (hit_sphere(Point3(0, 0, -1), 0.5, r)) {
-        return Color(1, 0, 0);  // Red color for sphere hit
+    auto t = hit_sphere(Point3(0, 0, -1), 0.5, r);
+    if (t > 0.0) {
+        Vec3 N = unit_vector(r.at(t) - Vec3(0, 0, -1));  // Surface normal
+        return 0.5 * Color(N.x() + 1, N.y() + 1, N.z() + 1);
     }
     Vec3 unit_direction = unit_vector(r.direction());
-    auto t = 0.5 * (unit_direction.y() + 1.0);
-    return (1.0 - t) * Color(1.0, 1.0, 1.0) + t * Color(0.5, 0.7, 1.0);  // Blue to white gradient
+    t = 0.5 * (unit_direction.y() + 1.0);
+    return (1.0 - t) * Color(1.0, 1.0, 1.0) + t * Color(0.5, 0.7, 1.0);
 }
+
 
 
 int main() {
