@@ -12,21 +12,28 @@ double hit_sphere(const Point3& center, double radius, const Ray& r) {
         return -1.0;  // No intersection
     }
     else {
-        return (-b - sqrt(discriminant)) / (2.0 * a);  // Return the nearest t
+        return (-b - sqrt(discriminant)) / (2.0 * a);  // Return nearest t
     }
 }
-
 
 Color ray_color(const Ray& r) {
-    auto t = hit_sphere(Point3(0, 0, -1), 0.5, r);
-    if (t > 0.0) {
-        Vec3 N = unit_vector(r.at(t) - Vec3(0, 0, -1));  // Surface normal
-        return 0.5 * Color(N.x() + 1, N.y() + 1, N.z() + 1);
+    double t_closest = std::numeric_limits<double>::max();  // Keep track of the closest hit
+    Point3 sphere_center_1(0, 0, -1);  // First (and only) sphere
+
+    // Check if the ray hits the first sphere
+    double t1 = hit_sphere(sphere_center_1, 0.5, r);
+    if (t1 > 0.0 && t1 < t_closest) {
+        t_closest = t1;
+        Vec3 N = unit_vector(r.at(t1) - sphere_center_1);
+        return 0.5 * Color(N.x() + 1, N.y() + 1, N.z() + 1);  // Shade the first sphere
     }
+
+    // Background gradient if no hit
     Vec3 unit_direction = unit_vector(r.direction());
-    t = 0.5 * (unit_direction.y() + 1.0);
+    auto t = 0.5 * (unit_direction.y() + 1.0);
     return (1.0 - t) * Color(1.0, 1.0, 1.0) + t * Color(0.5, 0.7, 1.0);
 }
+
 
 
 
