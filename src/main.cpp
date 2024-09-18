@@ -1,14 +1,21 @@
 #include "ray.h"
 #include "vec3.h"
 #include <iostream>
+#include <cstdlib>  // For rand()
+#include <limits>
 
-// Generates a random point inside a unit sphere for diffuse reflection
+// Generates a random point inside a unit sphere
 Vec3 random_in_unit_sphere() {
     while (true) {
         Vec3 p = Vec3(random_double(), random_double(), random_double()) * 2.0 - Vec3(1, 1, 1);
         if (p.length_squared() >= 1) continue;
         return p;
     }
+}
+
+// Reflect function: Reflects the ray about the normal
+Vec3 reflect(const Vec3& v, const Vec3& n) {
+    return v - 2 * dot(v, n) * n;
 }
 
 // Function to check if the ray hits a sphere
@@ -19,41 +26,53 @@ double hit_sphere(const Point3& center, double radius, const Ray& r) {
     auto c = dot(oc, oc) - radius * radius;
     auto discriminant = b * b - 4 * a * c;
     if (discriminant < 0) {
-        return -1.0;  // No hit
+        return -1.0;  // No intersection
     }
     else {
         return (-b - sqrt(discriminant)) / (2.0 * a);  // Return nearest t
     }
 }
 
-// Recursive ray_color function for diffuse scattering
+// Recursive ray_color function for diffuse and reflective scattering
 Color ray_color(const Ray& r, int depth) {
     if (depth <= 0) {
         return Color(0, 0, 0);  // If we've exceeded ray bounce limit, no more light is gathered.
     }
 
-    // Check if the ray hits the main sphere
+    // Sphere 1 (diffuse material)
     auto t = hit_sphere(Point3(0, 0, -1), 0.5, r);
     if (t > 0.0) {
         Vec3 hit_point = r.at(t);
         Vec3 normal = unit_vector(hit_point - Vec3(0, 0, -1));
         Vec3 target = hit_point + normal + random_in_unit_sphere();
-        return 0.5 * ray_color(Ray(hit_point, target - hit_point), depth - 1);  // Recursively trace scattered ray
+        return 0.5 * ray_color(Ray(hit_point, target - hit_point), depth - 1);  // Diffuse scatter
     }
 
-    // Check if the ray hits the ground (large sphere)
+    // Sphere 2 (metallic reflection with fuzziness)
+    t = hit_sphere(Point3(1, 0, -1), 0.5, r);
+    if (t > 0.0) {
+        Vec3 hit_point = r.at(t);
+        Vec3 normal = unit_vector(hit_point - Vec3(1, 0, -1));
+        Vec3 reflected = reflect(unit_vector(r.direction()), normal);
+        Vec3 fuzzy_reflection = reflected + 0.3 * random_in_unit_sphere();  // Add fuzziness
+        if (dot(fuzzy_reflection, normal) > 0) {
+            return 0.5 * ray_color(Ray(hit_point, fuzzy_reflection), depth - 1);  // Reflective scatter with fuzziness
+        }
+    }
+
+    // Ground sphere
     t = hit_sphere(Point3(0, -100.5, -1), 100, r);
     if (t > 0.0) {
         Vec3 hit_point = r.at(t);
         Vec3 normal = unit_vector(hit_point - Vec3(0, -100.5, -1));
         Vec3 target = hit_point + normal + random_in_unit_sphere();
-        return 0.5 * ray_color(Ray(hit_point, target - hit_point), depth - 1);  // Diffuse ground
+        return 0.5 * ray_color(Ray(hit_point, target - hit_point), depth - 1);
     }
 
-    // Background gradient (sky)
+    // Background gradient
     Vec3 unit_direction = unit_vector(r.direction());
     t = 0.5 * (unit_direction.y() + 1.0);
-    return (1.0 - t) * Color(1.0, 1.0, 1.0) + t * Color(0.5, 0.7, 1.0);  // Sky gradient: white to blue
+    return (1.0 - t) * Color(1.0, 1.0, 1.0) + t * Color(0.5, 0.7, 1.0);
 }
 
 int main() {
