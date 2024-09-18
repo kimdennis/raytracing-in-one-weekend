@@ -1,3 +1,4 @@
+// ray.h
 #ifndef RAY_H
 #define RAY_H
 
@@ -17,9 +18,9 @@ public:
         return orig + t * dir;
     }
 
-public:
+private:
     Point3 orig;
     Vec3 dir;
 };
 
-#endif
+#endif // RAY_H

@@ -1,123 +1,86 @@
-#include "ray.h"
+// main.cpp
+
+#include "rtweekend.h"
 #include "vec3.h"
+#include "color.h"
+#include "ray.h"
+#include "hittable_list.h"
+#include "sphere.h"
+#include "camera.h"
+#include "material.h"
+
 #include <iostream>
-#include <cstdlib>  // For rand()
-#include <limits>
+#include <cstdlib>
+#include <ctime>
 
-// Generates a random point inside a unit sphere
-Vec3 random_in_unit_sphere() {
-    while (true) {
-        Vec3 p = Vec3(random_double(), random_double(), random_double()) * 2.0 - Vec3(1, 1, 1);
-        if (p.length_squared() >= 1) continue;
-        return p;
-    }
-}
+Color ray_color(const Ray& r, const Hittable& world, int depth) {
+    HitRecord rec;
 
-// Reflect function: Reflects the ray about the normal
-Vec3 reflect(const Vec3& v, const Vec3& n) {
-    return v - 2 * dot(v, n) * n;
-}
+    // If we've exceeded the ray bounce limit, no more light is gathered.
+    if (depth <= 0)
+        return Color(0, 0, 0);
 
-// Function to check if the ray hits a sphere
-double hit_sphere(const Point3& center, double radius, const Ray& r) {
-    Vec3 oc = r.origin() - center;
-    auto a = dot(r.direction(), r.direction());
-    auto b = 2.0 * dot(oc, r.direction());
-    auto c = dot(oc, oc) - radius * radius;
-    auto discriminant = b * b - 4 * a * c;
-    if (discriminant < 0) {
-        return -1.0;  // No intersection
-    }
-    else {
-        return (-b - sqrt(discriminant)) / (2.0 * a);  // Return nearest t
-    }
-}
-
-// Recursive ray_color function for diffuse and reflective scattering
-Color ray_color(const Ray& r, int depth) {
-    if (depth <= 0) {
-        return Color(0, 0, 0);  // If we've exceeded ray bounce limit, no more light is gathered.
+    if (world.hit(r, 0.001, infinity, rec)) {
+        Ray scattered;
+        Color attenuation;
+        if (rec.material_ptr->scatter(r, rec, attenuation, scattered))
+            return attenuation * ray_color(scattered, world, depth - 1);
+        return Color(0, 0, 0);
     }
 
-    // Sphere 1 (diffuse material)
-    auto t = hit_sphere(Point3(0, 0, -1), 0.5, r);
-    if (t > 0.0) {
-        Vec3 hit_point = r.at(t);
-        Vec3 normal = unit_vector(hit_point - Vec3(0, 0, -1));
-        Vec3 target = hit_point + normal + random_in_unit_sphere();
-        return 0.5 * ray_color(Ray(hit_point, target - hit_point), depth - 1);  // Diffuse scatter
-    }
-
-    // Sphere 2 (metallic reflection with fuzziness)
-    t = hit_sphere(Point3(1, 0, -1), 0.5, r);
-    if (t > 0.0) {
-        Vec3 hit_point = r.at(t);
-        Vec3 normal = unit_vector(hit_point - Vec3(1, 0, -1));
-        Vec3 reflected = reflect(unit_vector(r.direction()), normal);
-        Vec3 fuzzy_reflection = reflected + 0.3 * random_in_unit_sphere();  // Add fuzziness
-        if (dot(fuzzy_reflection, normal) > 0) {
-            return 0.5 * ray_color(Ray(hit_point, fuzzy_reflection), depth - 1);  // Reflective scatter with fuzziness
-        }
-    }
-
-    // Ground sphere
-    t = hit_sphere(Point3(0, -100.5, -1), 100, r);
-    if (t > 0.0) {
-        Vec3 hit_point = r.at(t);
-        Vec3 normal = unit_vector(hit_point - Vec3(0, -100.5, -1));
-        Vec3 target = hit_point + normal + random_in_unit_sphere();
-        return 0.5 * ray_color(Ray(hit_point, target - hit_point), depth - 1);
-    }
-
-    // Background gradient
     Vec3 unit_direction = unit_vector(r.direction());
-    t = 0.5 * (unit_direction.y() + 1.0);
+    double t = 0.5 * (unit_direction.y() + 1.0);
     return (1.0 - t) * Color(1.0, 1.0, 1.0) + t * Color(0.5, 0.7, 1.0);
 }
 
 int main() {
-    // Image settings
+    // Initialize random seed
+    srand(static_cast<unsigned int>(time(0)));
+
+    // Image
+    const auto aspect_ratio = 16.0 / 9.0;
     const int image_width = 400;
-    const int image_height = 225;
-    const int samples_per_pixel = 100;  // For antialiasing
-    const int max_depth = 50;           // Max ray bounce depth
+    const int image_height = static_cast<int>(image_width / aspect_ratio);
+    const int samples_per_pixel = 100;
+    const int max_depth = 50;
 
-    // Camera setup
-    Point3 origin(0, 0, 0);
-    Vec3 horizontal(4.0, 0.0, 0.0);
-    Vec3 vertical(0.0, 2.25, 0.0);
-    Point3 lower_left_corner(-2.0, -1.125, -1.0);
+    // World
+    HittableList world;
 
-    // Output PPM header
+    auto material_ground = std::make_shared<Lambertian>(Color(0.8, 0.8, 0.0));
+    auto material_center = std::make_shared<Lambertian>(Color(0.7, 0.3, 0.3));
+    auto material_left = std::make_shared<Metal>(Color(0.8, 0.8, 0.8), 0.3);
+    auto material_right = std::make_shared<Metal>(Color(0.8, 0.6, 0.2), 1.0);
+
+    world.add(std::make_shared<Sphere>(Point3(0.0, -100.5, -1.0), 100.0, material_ground));
+    world.add(std::make_shared<Sphere>(Point3(0.0, 0.0, -1.0), 0.5, material_center));
+    world.add(std::make_shared<Sphere>(Point3(-1.0, 0.0, -1.0), 0.5, material_left));
+    world.add(std::make_shared<Sphere>(Point3(1.0, 0.0, -1.0), 0.5, material_right));
+
+    // Camera
+    Camera cam;
+
+    // Render
     std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
-    // Rendering loop
     for (int j = image_height - 1; j >= 0; --j) {
+        // Progress indicator
+        std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
+
         for (int i = 0; i < image_width; ++i) {
             Color pixel_color(0, 0, 0);
 
-            // Take multiple samples for each pixel and average the color
             for (int s = 0; s < samples_per_pixel; ++s) {
                 auto u = (i + random_double()) / (image_width - 1);
                 auto v = (j + random_double()) / (image_height - 1);
-                Ray r(origin, lower_left_corner + u * horizontal + v * vertical - origin);
-                pixel_color += ray_color(r, max_depth);  // Pass max_depth to control recursion
+                Ray r = cam.get_ray(u, v);
+                pixel_color += ray_color(r, world, max_depth);
             }
 
-            // Average the color over the number of samples
-            pixel_color /= double(samples_per_pixel);
-
-            // Gamma correction (taking the square root of the color)
-            pixel_color = Color(sqrt(pixel_color.x()), sqrt(pixel_color.y()), sqrt(pixel_color.z()));
-
-            // Output the pixel color, scaled to [0,255]
-            int ir = static_cast<int>(255.999 * pixel_color.x());
-            int ig = static_cast<int>(255.999 * pixel_color.y());
-            int ib = static_cast<int>(255.999 * pixel_color.z());
-
-            std::cout << ir << ' ' << ig << ' ' << ib << '\n';
+            write_color(std::cout, pixel_color, samples_per_pixel);
         }
     }
 
+    std::cerr << "\nDone.\n";
     return 0;
 }
