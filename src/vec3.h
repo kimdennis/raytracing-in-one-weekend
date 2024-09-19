@@ -134,4 +134,11 @@ inline Vec3 random_unit_vector() {
     return unit_vector(random_in_unit_sphere());
 }
 
+inline Vec3 refract(const Vec3& uv, const Vec3& n, double eta_over_eta_prime) {
+    auto cos_theta = fmin(dot(-uv, n), 1.0);
+    Vec3 r_out_perp = eta_over_eta_prime * (uv + cos_theta * n);
+    Vec3 r_out_parallel = -sqrt(fabs(1.0 - r_out_perp.length_squared())) * n;
+    return r_out_perp + r_out_parallel;
+}
+
 #endif
