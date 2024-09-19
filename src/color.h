@@ -1,5 +1,5 @@
 // color.h
-#ifndef COLOR_H
+#ifndef COLOR_H 
 #define COLOR_H
 
 #include "rtweekend.h"

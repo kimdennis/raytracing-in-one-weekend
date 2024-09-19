@@ -1,4 +1,5 @@
 // material.h
+
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
@@ -6,6 +7,8 @@
 #include "vec3.h"
 #include "ray.h"
 #include "hittable.h"
+#include <memory>
+
 struct HitRecord;
 
 class Material {
@@ -52,15 +55,12 @@ public:
         return (dot(scattered.direction(), rec.normal) > 0);
     }
 
-
-
 public:
     Color albedo;
     double fuzz;
-    double ir; // index of refraction
 };
 
-
+// Dielectric material
 class Dielectric : public Material {
 public:
     Dielectric(double index_of_refraction) : ir(index_of_refraction) {}
@@ -103,6 +103,5 @@ private:
         return r0 + (1.0 - r0) * pow((1.0 - cosine), 5);
     }
 };
-
 
 #endif

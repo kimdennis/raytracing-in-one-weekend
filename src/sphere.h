@@ -1,8 +1,10 @@
 // sphere.h
+
 #ifndef SPHERE_H
 #define SPHERE_H
 
 #include "hittable.h"
+#include <memory>
 
 class Sphere : public Hittable {
 public:
@@ -39,7 +41,7 @@ inline bool Sphere::hit(const Ray& r, double t_min, double t_max, HitRecord& rec
         rec.t = root;
         rec.p = r.at(rec.t);
 
-        // Adjusted normal calculation
+        // Adjusted normal calculation using fabs(radius)
         Vec3 outward_normal = (rec.p - center) / fabs(radius);
 
         rec.set_face_normal(r, outward_normal);
