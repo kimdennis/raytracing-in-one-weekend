@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\DENNI\Projects\raytracing-in-one-weekend\cuda_raytracer\build\CMakeFiles\3f77de189b3d2be76beee1734820692c\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{41FE6595-3E15-3472-B105-77EDC3CE31D7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

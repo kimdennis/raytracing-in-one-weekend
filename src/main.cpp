@@ -41,10 +41,13 @@ Color ray_color(const Ray& r, const Hittable& world, int depth) {
 int main() {
     // Image configuration
     const auto aspect_ratio = 16.0 / 9.0;
-    const int image_width = 1200;
+    //const int image_width = 1200;
+    const int image_width = 400;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
-    const int samples_per_pixel = 100; // Higher sample count for better image quality
-    const int max_depth = 50; // Maximum recursion depth for ray bounces
+    // const int samples_per_pixel = 100; // Higher sample count for better image quality
+    const int samples_per_pixel = 10;
+    //const int max_depth = 50; // Maximum recursion depth for ray bounces
+    const int max_depth = 10;
 
     // World setup
     HittableList world;
@@ -54,8 +57,8 @@ int main() {
     world.add(std::make_shared<Sphere>(Point3(0, -1000, 0), 1000, ground_material));
 
     // Random Spheres
-    for (int a = -11; a < 11; a++) {
-        for (int b = -11; b < 11; b++) {
+    for (int a = -5; a < 5; a++) {
+        for (int b = -5; b < 5; b++) {
             auto choose_mat = random_double();
             Point3 center(a + 0.9 * random_double(), 0.2, b + 0.9 * random_double());
 
