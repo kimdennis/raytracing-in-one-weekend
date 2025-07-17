@@ -51,9 +51,31 @@ nvcc src/main.cu -o raytracer -I src/ --extended-lambda
 
 ### CPU Version
 After compiling, run the CPU version:
-```bash
-./RayTracer > image.ppm
-```
+
+**⚠️ Important: Do NOT double-click the executable!**
+
+The raytracer outputs image data to the console. If you double-click the executable, you'll see random numbers flickering across the screen and won't be able to see the progress.
+
+**Correct way to run:**
+
+1. **Open Command Prompt or PowerShell**
+2. **Navigate to the executable directory:**
+   ```cmd
+   cd "path\to\your\project\build\Debug"
+   ```
+3. **Run with output redirection:**
+   ```cmd
+   raytracing.exe > image.ppm
+   ```
+
+This will:
+- Show progress messages like "Scanlines remaining: 449, 448, 447..."
+- Save the rendered image to `image.ppm`
+- Allow you to see the rendering progress
+
+**Alternative methods:**
+- Run from Visual Studio: Open the `.sln` file and press F5
+- Use PowerShell: `.\raytracing.exe > image.ppm`
 
 ### CUDA Version
 Run the CUDA version:
